@@ -1,53 +1,70 @@
-/**
- * Retrieves the translation of text.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-i18n/
- */
 import { __ } from '@wordpress/i18n';
-
-/**
- * React hook that is used to mark the block wrapper element.
- * It provides all the necessary props like the class name.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useblockprops
- */
-import { useBlockProps } from '@wordpress/block-editor';
-
-/**
- * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
- * Those files can contain any CSS code that gets applied to the editor.
- *
- * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
- */
 import './editor.scss';
+import { InspectorControls, MediaUpload, MediaUploadCheck } from '@wordpress/block-editor';
+import { PanelBody, PanelRow, Button, Carousel } from '@wordpress/components';
 
-/**
- * The edit function describes the structure of your block in the context of the
- * editor. This represents what the editor will render when the block is used.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/#edit
- *
- * @return {WPElement} Element to render.
- */
+const Edit = ({attributes, setAttributes}) => {
+	const { images } = attributes;
 
-import { InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, Button } from '@wordpress/components';
+	const onSelectImages = (newImages) => {
+		setAttributes( { images: newImages } );
+	};
 
-export default function Edit() {
+	const onRemoveImage = (removedImage) => {
+		const updatedImages = images.filter( (images) => images.id !== removedImage.id );
+		setAttributes( { images: updatedImages } );
+	};
+
 	return (
-		<div { ...useBlockProps() }>
-			<p>
-				{ __( 'Image Slider – hello from the editor!', 'image-slider' ) }
-			</p>
+		<div>
 			<InspectorControls>
 				<PanelBody title={ __( 'Image Settings', 'image-slider' ) }>
-					<Button
-						label="Select Image"
-						icon="upload"
-						onClick={ () => prompt( 'Selecting image' ) }
-					/>
+					<PanelRow>
+						<MediaUploadCheck>
+							<MediaUpload
+								onSelect = { onSelectImages }
+								multiple = { true }
+								gallery = { true }
+								value = { images.map((image)=> image.id) }
+								render = { ({ open }) => (
+									<Button
+										onClick = { open }
+										className = 'button button-large'>
+										{ __('Insert Images', 'image-slider') }
+									</Button>
+								) }
+							/>
+						</MediaUploadCheck>
+					</PanelRow>
+					{images.length > 0 && (
+						<PanelRow>
+							<h3>{__('Selected Images', 'image-slider')}</h3>
+							<ul>
+								{images.map((image) => {
+									<li key = { image.id }>
+										<img src = {image.url} alt = {image.alt} />
+										<Button onClick={() => onRemoveImage(image)}>
+											{__('Remove', 'image-slider')}
+										</Button>
+									</li>
+								})}
+							</ul>
+						</PanelRow>
+					)}
 				</PanelBody>
 			</InspectorControls>
+
+			{images.length > 0 && (
+				<Carousel>
+					{images.map((image) => (
+						<div key={image.id}>
+							<img src={image.url} alt={image.alt} />
+						</div>
+					))}
+				</Carousel>
+			)}
 		</div>
 	);
 }
+
+export default Edit;

@@ -29,5 +29,12 @@ registerBlockType( metadata.name, {
 	/**
 	 * @see ./edit.js
 	 */
+	attributes: {
+		images: {
+			type: 'array',
+			default: [],
+		},
+	},
+
 	edit: Edit,
 } );
